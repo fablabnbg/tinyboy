@@ -124,8 +124,8 @@ def main():
   parser = ArgumentParser(epilog="Version "+__VERSION__+"\n -- Written by "+__AUTHOR__, description="Cut STL objects into pieces. Call without options to open an STL viewer and get the bounding box printed out.")
   parser.add_argument("-x", metavar='XPOS', help="cut at given X-coordinate, parallel to yz plane. Use '%%' with any value for a relative dimension. E.g. '-x 50%%' cuts the object in two equal halves.")
   # Not implemented: Prefix with '-' to measure from the high coordinates downward. Use units '%%', 'mm' or 'cm'. Suffix with '+' to make multiple equally spaced cuts. ")
-  parser.add_argument("-y", metavar='XPOS', help="cut at given Y-coordinate")
-  parser.add_argument("-z", metavar='XPOS', help="cut at given Y-coordinate")
+  parser.add_argument("-y", metavar='YPOS', help="cut at given Y-coordinate")
+  parser.add_argument("-z", metavar='ZPOS', help="cut at given Z-coordinate")
   parser.add_argument("-xy", metavar='POS', help="cut into vertical columns")
   parser.add_argument("-xz", metavar='POS', help="cut into horizontal columns")
   parser.add_argument("-yz", metavar='POS', help="cut into horizontal columns (other direction)")
@@ -146,7 +146,7 @@ def main():
   if args.yz is not None: cut['y']=cut['z']=args.yz
   if args.x is not None: cut['x']=args.x
   if args.y is not None: cut['y']=args.y
-  if args.z is not None: cut['y']=args.z
+  if args.z is not None: cut['z']=args.z
 
   if cut['x'] is None and cut['y'] is None and cut['z'] is None:
     print "loading "+args.infile+" ..."
