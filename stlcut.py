@@ -29,22 +29,17 @@ import trimesh
 
 
 __VERSION__ = '0.3'
+__AUTHOR__ = 'Juergen Weigert <juewei@fabmail.org>'
 
 
 def cutboxes_x(bbox, pos):
   # bbox = [[-63.32, -83.48, 0.] [ 63.32, 83.48, 3.00]]
-  x1=bbox[0][0]
-  x2=bbox[1][0]
-  y1=bbox[0][1]
-  y2=bbox[1][1]
-  z1=bbox[0][2]
-  z2=bbox[1][2]
+  x1,y1,z1=bbox[0]
+  x2,y2,z2=bbox[1]
 
   v = None
-  if pos[-1] == '%': 
-    v = (x2-x1)*.01*float(pos[:-1])+x1
-  else:
-    v = float(pos)
+  if pos[-1] == '%': v = (x2-x1)*.01*float(pos[:-1])+x1
+  else:              v = float(pos)
   # print "cutboxes_x ", bbox,v
 
   out = [ 
@@ -59,18 +54,12 @@ def cutboxes_x(bbox, pos):
 
 
 def cutboxes_y(bbox, pos):
-  x1=bbox[0][0]
-  x2=bbox[1][0]
-  y1=bbox[0][1]
-  y2=bbox[1][1]
-  z1=bbox[0][2]
-  z2=bbox[1][2]
+  x1,y1,z1=bbox[0]
+  x2,y2,z2=bbox[1]
 
   v = None
-  if pos[-1] == '%': 
-    v = (y2-y1)*.01*float(pos[:-1])+y1
-  else:
-    v = float(pos)
+  if pos[-1] == '%': v = (y2-y1)*.01*float(pos[:-1])+y1
+  else:              v = float(pos)
   # print "cutboxes_y ", bbox,v
 
   out = [ 
@@ -85,18 +74,12 @@ def cutboxes_y(bbox, pos):
 
 
 def cutboxes_z(bbox, pos):
-  x1=bbox[0][0]
-  x2=bbox[1][0]
-  y1=bbox[0][1]
-  y2=bbox[1][1]
-  z1=bbox[0][2]
-  z2=bbox[1][2]
+  x1,y1,z1=bbox[0]
+  x2,y2,z2=bbox[1]
 
   v = None
-  if pos[-1] == '%': 
-    v = (z2-z1)*.01*float(pos[:-1])+z1
-  else:
-    v = float(pos)
+  if pos[-1] == '%': v = (z2-z1)*.01*float(pos[:-1])+z1
+  else:              v = float(pos)
   # print "cutboxes_z ", bbox,v
 
   out = [ 
@@ -129,6 +112,7 @@ def do_cut(axis, pos, name, engine):
     print "cutting "+outname+"..."
     boxl[b].process()	# basic cleanup
     mcut = m.intersection(boxl[b], engine=engine)
+    mcut.process()
     print "saving "+outname+" ..."
     trimesh.io.export.export_stl(mcut, open(outname, "wb+"))
     # print "... done."
@@ -137,15 +121,16 @@ def do_cut(axis, pos, name, engine):
 
 
 def main():
-  parser = ArgumentParser(epilog="version: "+__VERSION__, description="Cut STL objects into pieces.")
-  parser.add_argument("-x", metavar='XPOS', help="cut at given X-coordinate, parallel to yz plane. Prefix with '-' to measure from the high coordinates downward. Use units '%', 'mm' or 'cm'. Suffix with '+' to make multiple equally spaced cuts. ")
+  parser = ArgumentParser(epilog="Version "+__VERSION__+"\n -- Written by "+__AUTHOR__, description="Cut STL objects into pieces. Call without options to open an STL viewer and get the bounding box printed out.")
+  parser.add_argument("-x", metavar='XPOS', help="cut at given X-coordinate, parallel to yz plane. Use '%%' with any value for a relative dimension. E.g. '-x 50%%' cuts the object in two equal halves.")
+  # Not implemented: Prefix with '-' to measure from the high coordinates downward. Use units '%%', 'mm' or 'cm'. Suffix with '+' to make multiple equally spaced cuts. ")
   parser.add_argument("-y", metavar='XPOS', help="cut at given Y-coordinate")
   parser.add_argument("-z", metavar='XPOS', help="cut at given Y-coordinate")
   parser.add_argument("-xy", metavar='POS', help="cut into vertical columns")
   parser.add_argument("-xz", metavar='POS', help="cut into horizontal columns")
   parser.add_argument("-yz", metavar='POS', help="cut into horizontal columns (other direction)")
   parser.add_argument("-d", "--xyz", "--dice", metavar='POS', help="cut into equal sided dices ")
-  parser.add_argument("-e", "--engine", help="select the CSG engine. Try 'blender' or 'scad' or check 'pydoc trimesh.boolean.intersection' for more valid values.")
+  parser.add_argument("-e", "--engine", help="select the CSG engine. Try 'blender' or 'scad' or check 'pydoc trimesh.boolean.intersection' for more valid values. The openSCAD engine may work better for objects with disconnected parts.")
   parser.add_argument("infile", metavar="SVGFILE", help="The SVG input file")
 
   args = parser.parse_args()      # --help is automatic
