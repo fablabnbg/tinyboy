@@ -176,7 +176,14 @@ def main():
     print "loading "+args.infile+" ..."
     m = trimesh.load_mesh(args.infile)
     print m.bounds
+    bb = m.bounding_box			# oriented parallel to the axis
+    # bb = m.bounding_box_oriented	# rotated for minimum size, slow!
+    for f in bb.facets():
+      bb.visual.face_colors[f] = trimesh.visual.rgba([255,255,0,127])
+    # FIXME: transparency and color does not work.
+    # (m+bb).show(block=False)
     m.show(block=False)
+
     print "In the mesh view window, dragging rotates the view, ctl + drag pans, mouse wheel scrolls, 'z' returns to the base view, 'w' toggles wireframe mode, and 'c' toggles backface culling."
     parser.exit('bounding box printed. Specify one of the -x, -y, -z options to cut something')
 
