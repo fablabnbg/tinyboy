@@ -1,95 +1,119 @@
 #!/usr/bin/python
 #
-# stl_cut.py -- a simple tool to cut one STL-model into 
+# stl_cut.py -- a simple tool to cut one STL-model into
 #               halves or other portions. This helps a 3D printer
 #               to produce larger objects than would fit on the base
 #               plate. The printed parts need to be glued together
 #               afterwards.
-# Example: stl_cut.py candlestick.stl -xyz 50% 
-#               applies 3 cuts parallel to the 3 axis to produce 8 files 
+# Example: stl_cut.py candlestick.stl -xyz 50%
+#               applies 3 cuts parallel to the 3 axis to produce 8 files
 #               candlestick_x1_y1_z1.stl to candlestick_x2_y2_z2.svg
-# 
+#
 #
 # -x 50%   writes NAME_x1.svg and NAME_x2.svg
 #          where x1 is the part with the lower x coordinates.
 # -y -12mm writes out NAME_y1.svg and NAME_y2.svg
 #          where NAME_y2.svg is 12mm wide, and NAME_y1.svg has the rest.
 # -z 25%+  writes out 4 slices z1, z2, z3, z4, each of equal height.
+# -z 25%-  writes only the first slice (z1).
 #
 # The combined options -xyz, -xy, -xz, -yz affect all named axis in the
-# same way. Starting with x, then y, then z. 
+# same way. Starting with x, then y, then z.
 #
 # 0.1 jw, building option parser and scaffolding.
 # 0.2 jw, cutboxes_*() implementation.
 # 0.3 jw, engine selection option added.
+# 0.4 jw, refactored coords_pos_spec() from cutboxes_x,y,z
+#         implemented +,- suffixes via range_list()
 
 import re,os
 from argparse import ArgumentParser
 import trimesh
 
 
-__VERSION__ = '0.3'
+__VERSION__ = '0.4'
 __AUTHOR__ = 'Juergen Weigert <juewei@fabmail.org>'
+
+
+def range_list(x1, x2, v, items):
+  if items == '-': return ( (x1, v), )
+  if items == '2': return ( (x1, v), (v, x2) )
+  d = v - x1
+  x = x1
+  ret = [ (x, x+d) ]
+  while x+d < x2:
+    x = x + d
+    ret.append( (x, x+d), )
+  return ret
+
+def coords_pos_spec(bbox, pos):
+  items = '2'
+  if pos[-1] == '-':
+    pos = pos[:-1]
+    items = '-'
+  if pos[-1] == '+':
+    pos = pos[:-1]
+    items = '+'
+
+  perc=False
+  if pos[-1] == '%':
+    pos = pos[:-1]
+    perc = True
+
+  ret = []
+  ret.extend(bbox[0])
+  ret.extend(bbox[1])
+  ret.append(float(pos))
+  ret.append(perc)
+  ret.append(items)
+
+  return ret
+
 
 
 def cutboxes_x(bbox, pos):
   # bbox = [[-63.32, -83.48, 0.] [ 63.32, 83.48, 3.00]]
-  x1,y1,z1=bbox[0]
-  x2,y2,z2=bbox[1]
-
-  v = None
-  if pos[-1] == '%': v = (x2-x1)*.01*float(pos[:-1])+x1
-  else:              v = float(pos)
+  x1,y1,z1, x2,y2,z2, v, perc, items = coords_pos_spec(bbox, pos)
+  if perc: v = (x2-x1)*.01*v+x1
   # print "cutboxes_x ", bbox,v
 
-  out = [ 
-    trimesh.primitives.Box(box_center =[(v+x1)*.5, (y2+y1)*.5, (z2+z1)*.5], 
-                           box_extents=[(v-x1),    (y2-y1),    (z2-z1)]),
-    trimesh.primitives.Box(box_center =[(x2+v)*.5, (y2+y1)*.5, (z2+z1)*.5], 
-                           box_extents=[(x2-v),    (y2-y1),    (z2-z1)])
-    ]
-
-  # print "cutboxes_x out", out[0].bounds, out[1].bounds
+  out = []
+  for (l,h) in range_list(x1, x2, v, items):
+    print 'x range: [%g .. %g]' % (l, h)
+    out.append(trimesh.primitives.Box(
+        box_center =[(h+l)*.5, (y2+y1)*.5, (z2+z1)*.5],
+        box_extents=[(h-l),    (y2-y1),    (z2-z1)]))
+    # print "cutboxes_x out", out[-1].bounds
   return out
 
 
 def cutboxes_y(bbox, pos):
-  x1,y1,z1=bbox[0]
-  x2,y2,z2=bbox[1]
-
-  v = None
-  if pos[-1] == '%': v = (y2-y1)*.01*float(pos[:-1])+y1
-  else:              v = float(pos)
+  x1,y1,z1, x2,y2,z2, v, perc, items = coords_pos_spec(bbox, pos)
+  if perc: v = (y2-y1)*.01*v+y1
   # print "cutboxes_y ", bbox,v
 
-  out = [ 
-    trimesh.primitives.Box(box_center =[(x2+x1)*.5, (v+y1)*.5, (z2+z1)*.5], 
-                           box_extents=[(x2-x1),    (v-y1),    (z2-z1)]),
-    trimesh.primitives.Box(box_center =[(x2+x1)*.5, (y2+v)*.5, (z2+z1)*.5], 
-                           box_extents=[(x2-x1),    (y2-v),    (z2-z1)])
-    ]
-
-  # print "cutboxes_y out", out[0].bounds, out[1].bounds
+  out = []
+  for (l,h) in range_list(y1, y2, v, items):
+    print 'y range: [%g .. %g]' % (l, h)
+    out.append(trimesh.primitives.Box(
+        box_center =[(x2+x1)*.5, (h+l)*.5, (z2+z1)*.5],
+        box_extents=[(x2-x1),    (h-l),    (z2-z1)]))
+    # print "cutboxes_y out", out[-1].bounds
   return out
 
 
 def cutboxes_z(bbox, pos):
-  x1,y1,z1=bbox[0]
-  x2,y2,z2=bbox[1]
-
-  v = None
-  if pos[-1] == '%': v = (z2-z1)*.01*float(pos[:-1])+z1
-  else:              v = float(pos)
+  x1,y1,z1, x2,y2,z2, v, perc, items = coords_pos_spec(bbox, pos)
+  if perc: v = (z2-z1)*.01*v+z1
   # print "cutboxes_z ", bbox,v
 
-  out = [ 
-    trimesh.primitives.Box(box_center =[(x2+x1)*.5, (y2+y1)*.5, (v+z1)*.5], 
-                           box_extents=[(x2-x1),    (y2-y1),    (v-z1)]),
-    trimesh.primitives.Box(box_center =[(x2+x1)*.5, (y2+y1)*.5, (z2+v)*.5], 
-                           box_extents=[(x2-x1),    (y2-y1),    (z2-v)])
-    ]
-  # print "cutboxes_z out", out[0].bounds, out[1].bounds
-
+  out = []
+  for (l,h) in range_list(z1, z2, v, items):
+    print 'z range: [%g .. %g]' % (l, h)
+    out.append(trimesh.primitives.Box(
+        box_center =[(x2+x1)*.5, (y2+y1)*.5, (h+l)*.5],
+        box_extents=[(x2-x1),    (y2-y1),    (h-l)]))
+    # print "cutboxes_z out", out[-1].bounds
   return out
 
 
@@ -121,9 +145,9 @@ def do_cut(axis, pos, name, engine):
 
 
 def main():
-  parser = ArgumentParser(epilog="Version "+__VERSION__+"\n -- Written by "+__AUTHOR__, description="Cut STL objects into pieces. Call without options to open an STL viewer and get the bounding box printed out.")
-  parser.add_argument("-x", metavar='XPOS', help="cut at given X-coordinate, parallel to yz plane. Use '%%' with any value for a relative dimension. E.g. '-x 50%%' cuts the object in two equal halves.")
-  # Not implemented: Prefix with '-' to measure from the high coordinates downward. Use units '%%', 'mm' or 'cm'. Suffix with '+' to make multiple equally spaced cuts. ")
+  parser = ArgumentParser(epilog="Version "+__VERSION__+"\n -- Written by "+__AUTHOR__+"\n -- Example (3 parts): stlcut LFS_Elephant.STL -x 33.4%+ -e scad", description="Cut STL objects into pieces. Call without options to open an STL viewer and get the bounding box printed out.")
+  parser.add_argument("-x", metavar='XPOS', help="cut at given X-coordinate, parallel to yz plane. Use '%%' with any value for a relative dimension. E.g. '-x 50%%' cuts the object in two equal halves. Suffix with '-' to create only the first part; Suffix with '+' to make multiple equally spaced cuts.")
+  # Not implemented: Prefix with '-' to measure from the high coordinates downward. Use units '%%', 'mm' or 'cm'.
   parser.add_argument("-y", metavar='YPOS', help="cut at given Y-coordinate")
   parser.add_argument("-z", metavar='ZPOS', help="cut at given Z-coordinate")
   parser.add_argument("-xy", metavar='POS', help="cut into vertical columns")
@@ -161,11 +185,11 @@ def main():
   print "x,y,z: ", cut['x'], cut['y'], cut['z']
 
   for dim in ('x','y','z'):
-    if cut[dim] is not None: 
+    if cut[dim] is not None:
       done = []
       for f in svg:
         done.extend(do_cut(dim, cut[dim], f, args.engine))
-        if f != args.infile: 
+        if f != args.infile:
           print "... removing "+f
           os.remove(f)
       svg = done
