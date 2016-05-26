@@ -1,10 +1,26 @@
 #!/usr/bin/python
 #
+# (C) 2016, Juergen Weigert, juewei@fabmail.org
+# Distribute under GPLv2 or ask.
+#
 # stl_cut.py -- a simple tool to cut one STL-model into
 #               halves or other portions. This helps a 3D printer
 #               to produce larger objects than would fit on the base
 #               plate. The printed parts need to be glued together
 #               afterwards.
+#
+# The openscad script to intersect two STL files is:
+#  intersection(){import("/tmp/tmpNfPiKV.STL");import("/tmp/tmp7L8VFI.STL");}
+# In case openscad fails, we should retry with a difference() operation.
+#
+# Requires:
+#
+# sudo pip install rtree
+# sudo pip install trimesh
+#
+#-----------------------
+#
+#
 # Example: stl_cut.py candlestick.stl -xyz 50%
 #               applies 3 cuts parallel to the 3 axis to produce 8 files
 #               candlestick_x1_y1_z1.stl to candlestick_x2_y2_z2.svg
@@ -25,13 +41,20 @@
 # 0.3 jw, engine selection option added.
 # 0.4 jw, refactored coords_pos_spec() from cutboxes_x,y,z
 #         implemented +,- suffixes via range_list()
-
+# 0.5 jw, option --fix added. Not so effective...
+#
+# TODO:
+#         option --support=0.1 
+#         Add a thin wall where the cut went. This prevents lose pieces
+#         from falling off during print.
+#
 import re,os
 from argparse import ArgumentParser
 import trimesh
+import rtree	# only needed for fix_normals()
 
 
-__VERSION__ = '0.4'
+__VERSION__ = '0.5'
 __AUTHOR__ = 'Juergen Weigert <juewei@fabmail.org>'
 
 
@@ -117,11 +140,16 @@ def cutboxes_z(bbox, pos):
   return out
 
 
-def do_cut(axis, pos, name, engine):
+def do_cut(axis, pos, name, engine='blender', fix=False):
   done = []
   print "loading "+name+" ..."
   m = trimesh.load_mesh(name)
+  print "guess_units: ", m.guess_units()
   m.process()	# basic cleanup
+  if fix:
+    m.fix_normals()
+    print "is watertight: ", m.fill_holes()
+    m.process()	# basic cleanup
   # print "... done."
 
   boxl = []
@@ -137,6 +165,10 @@ def do_cut(axis, pos, name, engine):
     boxl[b].process()	# basic cleanup
     mcut = m.intersection(boxl[b], engine=engine)
     mcut.process()
+    if fix:
+      mcut.fix_normals()
+      print "is watertight: ", m.fill_holes()
+      mcut.process()
     print "saving "+outname+" ..."
     trimesh.io.export.export_stl(mcut, open(outname, "wb+"))
     # print "... done."
@@ -155,6 +187,7 @@ def main():
   parser.add_argument("-yz", metavar='POS', help="cut into horizontal columns (other direction)")
   parser.add_argument("-d", "--xyz", "--dice", metavar='POS', help="cut into equal sided dices ")
   parser.add_argument("-e", "--engine", help="select the CSG engine. Try 'blender' or 'scad' or check 'pydoc trimesh.boolean.intersection' for more valid values. The openSCAD engine may work better for objects with disconnected parts.")
+  parser.add_argument("-f", "--fix", action='store_true', help="try to fix defects in STL: normals, holes, ...")
   parser.add_argument("infile", metavar="SVGFILE", help="The SVG input file")
 
   args = parser.parse_args()      # --help is automatic
@@ -175,6 +208,12 @@ def main():
   if cut['x'] is None and cut['y'] is None and cut['z'] is None:
     print "loading "+args.infile+" ..."
     m = trimesh.load_mesh(args.infile)
+    m.process()
+    if args.fix:
+      print "is watertight: ", m.fill_holes()
+      m.fix_normals()
+      m.process()
+    print "guess_units: ", m.guess_units()
     print m.bounds
     bb = m.bounding_box			# oriented parallel to the axis
     # bb = m.bounding_box_oriented	# rotated for minimum size, slow!
@@ -195,7 +234,7 @@ def main():
     if cut[dim] is not None:
       done = []
       for f in svg:
-        done.extend(do_cut(dim, cut[dim], f, args.engine))
+        done.extend(do_cut(dim, cut[dim], f, args.engine, args.fix))
         if f != args.infile:
           print "... removing "+f
           os.remove(f)
