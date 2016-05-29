@@ -42,6 +42,7 @@
 # 0.4 jw, refactored coords_pos_spec() from cutboxes_x,y,z
 #         implemented +,- suffixes via range_list()
 # 0.5 jw, option --fix added. Not so effective...
+#         units mm, cm, dm, m added.
 #
 # TODO:
 #         option --support=0.1 
@@ -78,15 +79,21 @@ def coords_pos_spec(bbox, pos):
     pos = pos[:-1]
     items = '+'
 
+  # casting to float() here asserts that only one unit is given.
   perc=False
   if pos[-1] == '%':
-    pos = pos[:-1]
+    pos = float(pos[:-1])
     perc = True
+
+  if pos[-2:] == 'mm': pos = float(pos[:-2])
+  if pos[-2:] == 'cm': pos = float(pos[:-2])*10.0
+  if pos[-2:] == 'dm': pos = float(pos[:-2])*100.0
+  if pos[-1:] ==  'm': pos = float(pos[:-1])*1000.0
 
   ret = []
   ret.extend(bbox[0])
   ret.extend(bbox[1])
-  ret.append(float(pos))
+  ret.append(pos)
   ret.append(perc)
   ret.append(items)
 
@@ -178,7 +185,7 @@ def do_cut(axis, pos, name, engine='blender', fix=False):
 
 def main():
   parser = ArgumentParser(epilog="Version "+__VERSION__+"\n -- Written by "+__AUTHOR__+"\n -- Example (3 parts): stlcut LFS_Elephant.STL -x 33.4%+ -e scad", description="Cut STL objects into pieces. Call without options to open an STL viewer and get the bounding box printed out.")
-  parser.add_argument("-x", metavar='XPOS', help="cut at given X-coordinate, parallel to yz plane. Use '%%' with any value for a relative dimension. E.g. '-x 50%%' cuts the object in two equal halves. Suffix with '-' to create only the first part; Suffix with '+' to make multiple equally spaced cuts.")
+  parser.add_argument("-x", metavar='XPOS', help="cut at given X-coordinate, parallel to yz plane. Use '%%' with any value for a relative dimension. E.g. '-x 50%%' cuts the object in two equal halves. Suffix with '-' to create only the first part; Suffix with '+' to make multiple equally spaced cuts. Default unit is mm.")
   # Not implemented: Prefix with '-' to measure from the high coordinates downward. Use units '%%', 'mm' or 'cm'.
   parser.add_argument("-y", metavar='YPOS', help="cut at given Y-coordinate")
   parser.add_argument("-z", metavar='ZPOS', help="cut at given Z-coordinate")
