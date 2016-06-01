@@ -21,8 +21,10 @@
 #-----------------------
 #
 #
-# Example: stl_cut.py candlestick.stl -xyz 50%
-#               applies 3 cuts parallel to the 3 axis to produce 8 files
+# Example: stl_cut.py candlestick.stl -rz 45 -xyz 50%
+#               Applies 3 cuts to produce 8 files.
+#               One parallel to the x-y plane, the other two diagonal between the x and y axis.
+#
 #               candlestick_x1_y1_z1.stl to candlestick_x2_y2_z2.svg
 #
 #
@@ -43,19 +45,20 @@
 #         implemented +,- suffixes via range_list()
 # 0.5 jw, option --fix added. Not so effective...
 #         units mm, cm, dm, m added.
+# 0.6 jw, -rx, ry-, -rz options added to rotate a candlestick.
 #
 # TODO:
 #         option --support=0.1 
 #         Add a thin wall where the cut went. This prevents lose pieces
 #         from falling off during print.
 #
-import re,os
+import re,os, math
 from argparse import ArgumentParser
 import trimesh
 import rtree	# only needed for fix_normals()
 
 
-__VERSION__ = '0.5'
+__VERSION__ = '0.6'
 __AUTHOR__ = 'Juergen Weigert <juewei@fabmail.org>'
 
 
@@ -84,11 +87,10 @@ def coords_pos_spec(bbox, pos):
   if pos[-1] == '%':
     pos = float(pos[:-1])
     perc = True
-
-  if pos[-2:] == 'mm': pos = float(pos[:-2])
-  if pos[-2:] == 'cm': pos = float(pos[:-2])*10.0
-  if pos[-2:] == 'dm': pos = float(pos[:-2])*100.0
-  if pos[-1:] ==  'm': pos = float(pos[:-1])*1000.0
+  elif pos[-2:] == 'mm': pos = float(pos[:-2])
+  elif pos[-2:] == 'cm': pos = float(pos[:-2])*10.0
+  elif pos[-2:] == 'dm': pos = float(pos[:-2])*100.0
+  elif pos[-1:] ==  'm': pos = float(pos[:-1])*1000.0
 
   ret = []
   ret.extend(bbox[0])
@@ -146,13 +148,22 @@ def cutboxes_z(bbox, pos):
     # print "cutboxes_z out", out[-1].bounds
   return out
 
+def euler_rotation_matrix(rx, ry, rz):
+  if rx is None: rx = 0.0
+  if ry is None: ry = 0.0
+  if rz is None: rz = 0.0
+  alpha = math.pi*float(rx)/180.
+  beta  = math.pi*float(ry)/180.
+  gamma = math.pi*float(rz)/180.
+  return trimesh.transformations.euler_matrix(alpha, beta, gamma, 'rxyz')
 
-def do_cut(axis, pos, name, engine='blender', fix=False):
+def do_cut(axis, pos, name, engine='blender', mat=None, fix=False):
   done = []
   print "loading "+name+" ..."
   m = trimesh.load_mesh(name)
   print "guess_units: ", m.guess_units()
   m.process()	# basic cleanup
+  if mat is not None: m.transform(mat)
   if fix:
     m.fix_normals()
     print "is watertight: ", m.fill_holes()
@@ -195,6 +206,9 @@ def main():
   parser.add_argument("-d", "--xyz", "--dice", metavar='POS', help="cut into equal sided dices ")
   parser.add_argument("-e", "--engine", help="select the CSG engine. Try 'blender' or 'scad' or check 'pydoc trimesh.boolean.intersection' for more valid values. The openSCAD engine may work better for objects with disconnected parts.")
   parser.add_argument("-f", "--fix", action='store_true', help="try to fix defects in STL: normals, holes, ...")
+  parser.add_argument("-rx", metavar='XDEG', help="rotate about the X-axis")
+  parser.add_argument("-ry", metavar='YDEG', help="rotate about the Y-axis")
+  parser.add_argument("-rz", metavar='ZDEG', help="rotate about the Z-axis")
   parser.add_argument("infile", metavar="SVGFILE", help="The SVG input file")
 
   args = parser.parse_args()      # --help is automatic
@@ -212,10 +226,13 @@ def main():
   if args.y is not None: cut['y']=args.y
   if args.z is not None: cut['z']=args.z
 
+  Re = euler_rotation_matrix(args.rx, args.ry, args.rz)
+
   if cut['x'] is None and cut['y'] is None and cut['z'] is None:
     print "loading "+args.infile+" ..."
     m = trimesh.load_mesh(args.infile)
     m.process()
+    m.transform(Re)
     if args.fix:
       print "is watertight: ", m.fill_holes()
       m.fix_normals()
@@ -241,7 +258,8 @@ def main():
     if cut[dim] is not None:
       done = []
       for f in svg:
-        done.extend(do_cut(dim, cut[dim], f, args.engine, args.fix))
+        done.extend(do_cut(dim, cut[dim], f, engine=args.engine, mat=Re, fix=args.fix))
+	Re = None	# only rotate the original input file. The temp files are saved rotated.
         if f != args.infile:
           print "... removing "+f
           os.remove(f)
