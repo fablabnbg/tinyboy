@@ -195,6 +195,25 @@ def do_cut(axis, pos, name, engine='blender', mat=None, fix=False):
 
 
 def main():
+  cut = { 'x':None, 'y':None, 'z':None }
+  remesh = { 'vertex_perc': None, 'treshold': 0.3, 'boundaryweight': 1.0, 'xml_fmt': """<!DOCTYPE FilterScript>
+<FilterScript>
+ <filter name="Quadric Edge Collapse Decimation">
+  <Param type="RichInt" value="%d" name="TargetFaceNum"/>
+  <Param type="RichFloat" value="0" name="TargetPerc"/>
+  <Param type="RichFloat" value="%.2f" name="QualityThr"/>
+  <Param type="RichBool" value="true" name="PreserveBoundary"/>
+  <Param type="RichFloat" value="%.2f" name="BoundaryWeight"/>
+  <Param type="RichBool" value="true" name="PreserveNormal"/>
+  <Param type="RichBool" value="false" name="PreserveTopology"/>
+  <Param type="RichBool" value="true" name="OptimalPlacement"/>
+  <Param type="RichBool" value="false" name="PlanarQuadric"/>
+  <Param type="RichBool" value="false" name="QualityWeight"/>
+  <Param type="RichBool" value="true" name="AutoClean"/>
+  <Param type="RichBool" value="false" name="Selected"/>
+ </filter>
+</FilterScript>""" }
+
   parser = ArgumentParser(epilog="Version "+__VERSION__+"\n -- Written by "+__AUTHOR__+"\n -- Example (3 parts): stlcut LFS_Elephant.STL -x 33.4%+ -e scad", description="Cut STL objects into pieces. Call without options to open an STL viewer and get the bounding box printed out.")
   parser.add_argument("-x", metavar='XPOS', help="cut at given X-coordinate, parallel to yz plane. Use '%%' with any value for a relative dimension. E.g. '-x 50%%' cuts the object in two equal halves. Suffix with '-' to create only the first part; Suffix with '+' to make multiple equally spaced cuts. Default unit is mm.")
   # Not implemented: Prefix with '-' to measure from the high coordinates downward. Use units '%%', 'mm' or 'cm'.
@@ -206,6 +225,7 @@ def main():
   parser.add_argument("-d", "--xyz", "--dice", metavar='POS', help="cut into equal sided dices ")
   parser.add_argument("-e", "--engine", help="select the CSG engine. Try 'blender' or 'scad' or check 'pydoc trimesh.boolean.intersection' for more valid values. The openSCAD engine may work better for objects with disconnected parts.")
   parser.add_argument("-f", "--fix", action='store_true', help="try to fix defects in STL: normals, holes, ...")
+  parser.add_argument("-r", "--remesh-filter", metavar='VERTEX_PERCENTAGE', help="Apply the 'Quadratic Edge Collapse Decimation' filter from meshlab. This fixes all defects, but slightly changes the geometry. Optionally, you can append a trehshold value to the percentage like e.g. '-F 50%%,0.1' - The default treshold is "+str(remesh['treshold']))
   parser.add_argument("-rx", metavar='XDEG', help="rotate about the X-axis")
   parser.add_argument("-ry", metavar='YDEG', help="rotate about the Y-axis")
   parser.add_argument("-rz", metavar='ZDEG', help="rotate about the Z-axis")
@@ -216,7 +236,14 @@ def main():
   if args.infile is None:
     parser.exit("No input file given")
 
-  cut = { 'x':None, 'y':None, 'z':None }
+  if args.remesh_filter is not None:
+    f = args.remesh_filter.split(',')
+    f[0] = float(f[0].split('%')[0])
+    remesh['vertex_perc'] = f[0]
+    if len(f) > 1:
+      remesh['treshold'] = float(f[1])
+    print "remesh not impl. ", remesh
+
 
   if args.xyz is not None: cut['x']=cut['y']=cut['z']=args.xyz
   if args.xy is not None: cut['x']=cut['y']=args.xy
@@ -238,6 +265,7 @@ def main():
       m.fix_normals()
       m.process()
     print "guess_units: ", m.guess_units()
+    print "vertices: ", len(m.vertices)
     print m.bounds
     bb = m.bounding_box			# oriented parallel to the axis
     # bb = m.bounding_box_oriented	# rotated for minimum size, slow!
