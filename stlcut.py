@@ -46,21 +46,28 @@
 # 0.5 jw, option --fix added. Not so effective...
 #         units mm, cm, dm, m added.
 # 0.6 jw, -rx, ry-, -rz options added to rotate a candlestick.
+# 0.6a jw, try add bbox_eps. Maybe that helps with disappearing outer walls?
 #
 # TODO:
 #         option --support=0.1 
 #         Add a thin wall where the cut went. This prevents lose pieces
 #         from falling off during print.
 #
-import re,os, math
+# FIXME: calculate bounding box once, do all cuts with this box.
+#        currently the bounding box is calcualtated for each sub-object again,
+#        leading to 'wrong' cuts, if you use percentages and subobjects end up
+#        having different sizes.
+#
+import re, os, math, sys, copy
 from argparse import ArgumentParser
 import trimesh
 import rtree	# only needed for fix_normals()
 
 
-__VERSION__ = '0.6'
+__VERSION__ = '0.6a'
 __AUTHOR__ = 'Juergen Weigert <juewei@fabmail.org>'
 
+bbox_eps = 0.0001
 
 def range_list(x1, x2, v, items):
   if items == '-': return ( (x1, v), )
@@ -169,6 +176,15 @@ def do_cut(axis, pos, name, engine='blender', mat=None, fix=False):
     print "is watertight: ", m.fill_holes()
     m.process()	# basic cleanup
   # print "... done."
+  bbox = copy.deepcopy(m.bounds)
+  bbox[0][0] -= bbox_eps
+  bbox[0][1] -= bbox_eps
+  bbox[0][2] -= bbox_eps
+  bbox[1][0] += bbox_eps
+  bbox[1][1] += bbox_eps
+  bbox[1][2] += bbox_eps
+  print m.bounds
+  print bbox
 
   boxl = []
   if axis == 'x': boxl = cutboxes_x(m.bounds, pos)
