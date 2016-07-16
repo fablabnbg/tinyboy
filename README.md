@@ -10,6 +10,8 @@ Ideas
 * Extended rear feet at the acrylc cabinet, so that it can carry a 1kg spool without tipping.
 * Lipo block battery compartment for mobile use.
 * Mount inexpensive OrangePI Lite with Wlan-Support, or similar
+* Lots of LED strips for illumination
+* 4mm or 5mm acrylic cabinet with carrying handle.
 
 References
 ==========
