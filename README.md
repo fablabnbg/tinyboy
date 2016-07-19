@@ -20,6 +20,6 @@ References
 * Thingiverse: http://www.thingiverse.com/thing:701548 http://www.thingiverse.com/thing:969645
 * Facebook: https://www.facebook.com/tinyboy3dp
 
-* http://www.heise.de/newsticker/meldung/Ausprobiert-und-fuer-gut-befunden-Mini-3D-Drucker-fuer-160-Euro-3269957.html
+* Heise review: http://www.heise.de/newsticker/meldung/Ausprobiert-und-fuer-gut-befunden-Mini-3D-Drucker-fuer-160-Euro-3269957.html
 
 
