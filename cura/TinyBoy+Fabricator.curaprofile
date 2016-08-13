@@ -1,0 +1,48 @@
+[general]
+version = 1
+name = Current settings
+weight = 0
+type = machine_instance_profile
+
+[settings]
+brim_width = 3
+speed_travel = 40
+speed_slowdown_layers = 3
+material_print_temperature = 200
+raft_base_line_width = 0.4
+raft_interface_line_width = 0.4
+raft_margin = 1
+speed_wall_x = 80
+retraction_amount = 6.5
+speed_print = 30
+infill_sparse_density = 7
+infill_pattern = triangles
+retraction_hop = 0.1
+material_bed_temperature = 60
+skin_no_small_gaps_heuristic = False
+support_enable = True
+cool_min_layer_time = 3
+wall_thickness = 0.8
+layer_height = 0.2
+alternate_extra_perimeter = True
+retraction_count_max = 20
+speed_topbottom = 30
+speed_layer_0 = 20
+speed_wall_0 = 40
+adhesion_type = raft
+
+[defaults]
+speed_infill = 100
+material_bed_temperature = 60
+speed_wall_x = 80
+retraction_amount = 6.5
+speed_topbottom = 30
+infill_sparse_density = 10
+wall_thickness = 1
+speed_wall_0 = 40
+cool_min_layer_time = 3
+layer_height = 0.2
+
+[disabled_defaults]
+values = speed_infill,
+
