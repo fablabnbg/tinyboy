@@ -5,44 +5,43 @@ weight = 0
 type = machine_instance_profile
 
 [settings]
-brim_width = 3
-speed_travel = 40
-speed_slowdown_layers = 3
 material_print_temperature = 200
+alternate_extra_perimeter = True
+wall_thickness = 0.8
 raft_base_line_width = 0.4
-raft_interface_line_width = 0.4
-raft_margin = 1
+layer_height = 0.2
+speed_wall_0 = 40
+speed_infill = 40
+material_bed_temperature = 0
+adhesion_type = skirt
+speed_print = 40
+infill_line_distance = 5.7143
 speed_wall_x = 80
 retraction_amount = 6.5
-speed_print = 30
-infill_sparse_density = 7
-infill_pattern = triangles
-retraction_hop = 0.1
-material_bed_temperature = 60
-skin_no_small_gaps_heuristic = False
-support_enable = True
-cool_min_layer_time = 3
-wall_thickness = 0.8
-layer_height = 0.2
-alternate_extra_perimeter = True
-retraction_count_max = 20
 speed_topbottom = 30
-speed_layer_0 = 20
-speed_wall_0 = 40
-adhesion_type = raft
+support_enable = False
+retraction_hop = 0.05
+infill_pattern = triangles
+brim_width = 3
+skirt_gap = 2
+skirt_line_count = 2
+cool_min_layer_time = 3
+infill_sparse_density = 7
+raft_interface_line_width = 0.4
+support_type = buildplate
+raft_margin = 1
+speed_travel = 40
+retraction_count_max = 30
 
 [defaults]
-speed_infill = 100
-material_bed_temperature = 60
-speed_wall_x = 80
-retraction_amount = 6.5
-speed_topbottom = 30
-infill_sparse_density = 10
-wall_thickness = 1
-speed_wall_0 = 40
-cool_min_layer_time = 3
 layer_height = 0.2
-
-[disabled_defaults]
-values = speed_infill,
+speed_wall_0 = 40
+speed_infill = 100
+material_bed_temperature = 0
+cool_min_layer_time = 3
+speed_topbottom = 30
+wall_thickness = 1
+infill_sparse_density = 10
+retraction_amount = 6.5
+speed_wall_x = 80
 
