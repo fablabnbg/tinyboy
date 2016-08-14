@@ -6,6 +6,7 @@
 # distribute under GPLv2.0 or ask.
 #
 # 2016-06-23, jw -- initial draught.
+# 2016-08-14, jw -- fixed upward move to be really relative.
 #
 import sys, re, serial, time
 
@@ -14,8 +15,11 @@ verbose=False
 
 ser = serial.Serial("/dev/ttyUSB0", 115200, timeout=3, writeTimeout=10000)
 if len(sys.argv) <= 1:
-  ser.write("G1 Z15.0 F2400\n")
-  print("move up 15mm")
+  ser.write("G21\n");		# ;metric values
+  ser.write("G90\n");		# ;absolute positioning
+  # ser.write("G28 Z0\n")		# search endstop
+  ser.write("G92 Z0\nG1 Z10.0 F2400\n")	# zero z, then move (relative)
+  print("move up 10mm")
   sys.exit(0)
 
 file = sys.argv[1]
