@@ -47,6 +47,7 @@
 #         units mm, cm, dm, m added.
 # 0.6 jw, -rx, ry-, -rz options added to rotate a candlestick.
 # 0.6a jw, try add bbox_eps. Maybe that helps with disappearing outer walls?
+# 0.7 jw, support for newer trimesh 1.15.16 added. Install hints added.
 #
 # TODO:
 #         option --support=0.1 
@@ -60,11 +61,30 @@
 #
 import re, os, math, sys, copy
 from argparse import ArgumentParser
-import trimesh
-import rtree	# only needed for fix_normals()
+try:
+  import trimesh
+  import rtree	# only needed for fix_normals()
+except ImportError as e:
+  print(e)
+  print("""Try:
+   sudo apt-get install -y python-pip python-networkx python-scipy python-pyglet
+   sudo pip install trimesh
+
+   sudo apt-get install -y cmake openscad blender libspatialindex-dev libgeos-dev
+   sudo pip install rtree	# rtree==0.8.0 on Ubuntu 14.04
+""")
+  sys.exit(1)
+
+#
+
+try:
+  # python-trimesh 1.15.16 now has apply_transform instead of transform
+  trimesh.Trimesh.transform = trimesh.Trimesh.apply_transform
+except:
+  pass
 
 
-__VERSION__ = '0.6a'
+__VERSION__ = '0.7'
 __AUTHOR__ = 'Juergen Weigert <juewei@fabmail.org>'
 
 bbox_eps = 0.0001
@@ -168,7 +188,6 @@ def do_cut(axis, pos, name, engine='blender', mat=None, fix=False):
   done = []
   print "loading "+name+" ..."
   m = trimesh.load_mesh(name)
-  print "guess_units: ", m.guess_units()
   m.process()	# basic cleanup
   if mat is not None: m.transform(mat)
   if fix:
@@ -204,7 +223,12 @@ def do_cut(axis, pos, name, engine='blender', mat=None, fix=False):
       print "is watertight: ", m.fill_holes()
       mcut.process()
     print "saving "+outname+" ..."
-    trimesh.io.export.export_stl(mcut, open(outname, "wb+"))
+    try:
+      # 1.15.16 syntax
+      open(outname, "wb+").write(trimesh.io.export.export_stl(mcut))
+    except:
+      # old style
+      trimesh.io.export.export_stl(mcut, open(outname, "wb+"))
     # print "... done."
     done.append(outname)
   return done
@@ -280,7 +304,6 @@ def main():
       print "is watertight: ", m.fill_holes()
       m.fix_normals()
       m.process()
-    print "guess_units: ", m.guess_units()
     print "vertices: ", len(m.vertices)
     print m.bounds
     bb = m.bounding_box			# oriented parallel to the axis
