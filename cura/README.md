@@ -11,7 +11,7 @@ Cura settings
 
 <pre>
     cp tinyboy-jw.json /opt/cura/share/cura/resources/machines/
-    cp 0.2mm+quick.cfg ~/.local/share/cura/profiles/
-    cp TinyBoy+Fabricator.curaprofile ~/.local/share/cura/instance_profiles/
+    cp local/share/cura/profiles/*.cfg ~/.local/share/cura/profiles/
+    cp local/share/cura/instance_profiles/*.curaprofile ~/.local/share/cura/instance_profiles/
 </pre>
 .
