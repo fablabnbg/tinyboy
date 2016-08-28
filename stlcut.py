@@ -269,7 +269,7 @@ def main():
   parser.add_argument("-rx", metavar='XDEG', help="rotate about the X-axis")
   parser.add_argument("-ry", metavar='YDEG', help="rotate about the Y-axis")
   parser.add_argument("-rz", metavar='ZDEG', help="rotate about the Z-axis")
-  parser.add_argument("infile", metavar="SVGFILE", help="The SVG input file")
+  parser.add_argument("infile", metavar="STLFILE", help="The STL input file")
 
   args = parser.parse_args()      # --help is automatic
 

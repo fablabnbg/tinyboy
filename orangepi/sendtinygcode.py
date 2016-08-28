@@ -8,6 +8,15 @@
 # 2016-06-23, jw -- initial draught.
 # 2016-08-14, jw -- fixed upward move to be really relative.
 #
+# ERROR seen:
+#  Traceback (most recent call last):
+#  File "/usr/bin/sendtinygcode", line 59, in <module>
+#  seen = ser.readline()
+#  File "/usr/lib/python2.7/dist-packages/serial/serialposix.py", line 460, in read
+#  raise SerialException('device reports readiness to read but returned no data (device disconnected?)')
+#  serial.serialutil.SerialException: device reports readiness to read but returned no data (device disconnected?)
+# can we recover from this?
+
 import sys, re, serial, time
 
 
