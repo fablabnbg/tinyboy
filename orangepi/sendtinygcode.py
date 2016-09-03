@@ -8,15 +8,6 @@
 # 2016-06-23, jw -- initial draught.
 # 2016-08-14, jw -- fixed upward move to be really relative.
 #
-# ERROR seen:
-#  Traceback (most recent call last):
-#  File "/usr/bin/sendtinygcode", line 59, in <module>
-#  seen = ser.readline()
-#  File "/usr/lib/python2.7/dist-packages/serial/serialposix.py", line 460, in read
-#  raise SerialException('device reports readiness to read but returned no data (device disconnected?)')
-#  serial.serialutil.SerialException: device reports readiness to read but returned no data (device disconnected?)
-# can we recover from this?
-
 import sys, re, serial, time
 
 
@@ -26,10 +17,20 @@ ser = serial.Serial("/dev/ttyUSB0", 115200, timeout=3, writeTimeout=10000)
 if len(sys.argv) <= 1:
   ser.write("G21\n");		# ;metric values
   ser.write("G90\n");		# ;absolute positioning
+  ser.write("M104 S190.0\n");		# pre-heat extruder
   # ser.write("G28 Z0\n")		# search endstop
   ser.write("G92 Z0\nG1 Z10.0 F2400\n")	# zero z, then move (relative)
   print("move up 10mm")
   sys.exit(0)
+
+def ser_readline():
+  try:
+    line = ser.readline()
+  except Exception as e:
+    line = ''
+    print "ser.readline() error: " + e
+    time.sleep(1)
+  return line
 
 file = sys.argv[1]
 fd = open(file, 'r')
@@ -42,10 +43,10 @@ tstamp = time.time()
 start_tstamp = tstamp
 
 # gobble away initial boiler plate output, if any
-seen = ser.readline()
+seen = ser_readline()
 while len(seen):
   print seen
-  seen = ser.readline()
+  seen = ser_readline()
 
 while True:
   line = fd.readline()
@@ -64,7 +65,7 @@ while True:
       line = line[n:]
 
   while True:
-    seen = ser.readline()
+    seen = ser_readline()
     if seen[:2] == 'ok':
       if verbose: print seen
       break
