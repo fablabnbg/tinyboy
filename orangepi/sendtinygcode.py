@@ -28,7 +28,7 @@ def ser_readline():
     line = ser.readline()
   except Exception as e:
     line = ''
-    print "ser.readline() error: " + e
+    print "ser.readline() error: " + str(e)
     time.sleep(1)
   return line
 
