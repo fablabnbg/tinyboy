@@ -48,6 +48,8 @@
 # 0.6 jw, -rx, ry-, -rz options added to rotate a candlestick.
 # 0.6a jw, try add bbox_eps. Maybe that helps with disappearing outer walls?
 # 0.7 jw, support for newer trimesh 1.15.16 added. Install hints added.
+# 0.8 jw, -s, --scale option added, as I failed to scale an stl with
+#         any of meshlab, freecad, openscad.
 #
 # TODO:
 #         option --support=0.1 
@@ -62,12 +64,13 @@
 import re, os, math, sys, copy
 from argparse import ArgumentParser
 try:
+  import numpy
   import trimesh
   import rtree	# only needed for fix_normals()
 except ImportError as e:
   print(e)
   print("""Try:
-   sudo apt-get install -y python-pip python-networkx python-scipy python-pyglet
+   sudo apt-get install -y python-pip python-networkx python-scipy python-pyglet python-numpy
    sudo pip install trimesh
 
    sudo apt-get install -y cmake openscad blender libspatialindex-dev libgeos-dev
@@ -84,7 +87,7 @@ except:
   pass
 
 
-__VERSION__ = '0.7'
+__VERSION__ = '0.8'
 __AUTHOR__ = 'Juergen Weigert <juewei@fabmail.org>'
 
 bbox_eps = 0.0001
@@ -269,6 +272,8 @@ def main():
   parser.add_argument("-rx", metavar='XDEG', help="rotate about the X-axis")
   parser.add_argument("-ry", metavar='YDEG', help="rotate about the Y-axis")
   parser.add_argument("-rz", metavar='ZDEG', help="rotate about the Z-axis")
+  parser.add_argument("-s", "--scale", metavar='SCALE', help="uniformly scale the object about the origin")
+  parser.add_argument("-S", "--save-transformed", metavar='STLFILE', help="save an stl file after applying scale and rotation. No cut operation performed.")
   parser.add_argument("infile", metavar="STLFILE", help="The STL input file")
 
   args = parser.parse_args()      # --help is automatic
@@ -294,28 +299,39 @@ def main():
   if args.z is not None: cut['z']=args.z
 
   Re = euler_rotation_matrix(args.rx, args.ry, args.rz)
+  if args.scale is not None:
+    Sc = trimesh.transformations.scale_matrix(float(args.scale), [0,0,0])
+    RS = numpy.dot(Re,Sc)
+  else:
+    RS = Re
+
+  if args.save_transformed: cut['x'] = cut['y'] = cut['z'] = None
 
   if cut['x'] is None and cut['y'] is None and cut['z'] is None:
     print "loading "+args.infile+" ..."
     m = trimesh.load_mesh(args.infile)
     m.process()
-    m.transform(Re)
+    m.transform(RS)
     if args.fix:
       print "is watertight: ", m.fill_holes()
       m.fix_normals()
       m.process()
     print "vertices: ", len(m.vertices)
-    print m.bounds
-    bb = m.bounding_box			# oriented parallel to the axis
-    # bb = m.bounding_box_oriented	# rotated for minimum size, slow!
-    for f in bb.facets():
-      bb.visual.face_colors[f] = trimesh.visual.rgba([255,255,0,127])
-    # FIXME: transparency and color does not work.
-    # (m+bb).show(block=False)
-    m.show(block=False)
+    if args.save_transformed:
+      open(args.save_transformed, "wb+").write(trimesh.io.export.export_stl(m))
+      parser.exit(args.save_transformed + " written.\nSpecify one of the -x, -y, -z options instead of -S to cut something.")
+    else:
+      print m.bounds
+      bb = m.bounding_box			# oriented parallel to the axis
+      # bb = m.bounding_box_oriented	# rotated for minimum size, slow!
+      for f in bb.facets():
+        bb.visual.face_colors[f] = trimesh.visual.rgba([255,255,0,127])
+      # FIXME: transparency and color does not work.
+      # (m+bb).show(block=False)
+      m.show(block=False)
 
-    print "In the mesh view window, dragging rotates the view, ctl + drag pans, mouse wheel scrolls, 'z' returns to the base view, 'w' toggles wireframe mode, and 'c' toggles backface culling."
-    parser.exit('bounding box printed. Specify one of the -x, -y, -z options to cut something')
+      print "In the mesh view window, dragging rotates the view, ctl + drag pans, mouse wheel scrolls, 'z' returns to the base view, 'w' toggles wireframe mode, and 'c' toggles backface culling."
+      parser.exit('bounding box printed. Specify one of the -x, -y, -z options to cut something.')
 
   svg = [ args.infile ]
 
@@ -325,8 +341,8 @@ def main():
     if cut[dim] is not None:
       done = []
       for f in svg:
-        done.extend(do_cut(dim, cut[dim], f, engine=args.engine, mat=Re, fix=args.fix))
-	Re = None	# only rotate the original input file. The temp files are saved rotated.
+        done.extend(do_cut(dim, cut[dim], f, engine=args.engine, mat=RS, fix=args.fix))
+	RS = None	# only rotate the original input file. The temp files are saved rotated.
         if f != args.infile:
           print "... removing "+f
           os.remove(f)
