@@ -7,13 +7,18 @@
 #
 # 2016-06-23, jw -- initial draught.
 # 2016-08-14, jw -- fixed upward move to be really relative.
+# 2016-09-05, jw -- better exception handling.
 #
 import sys, re, serial, time
 
 
 verbose=False
 
-ser = serial.Serial("/dev/ttyUSB0", 115200, timeout=3, writeTimeout=10000)
+try:
+  ser = serial.Serial("/dev/ttyUSB0", 115200, timeout=3, writeTimeout=10000)
+except:
+  ser = serial.Serial("/dev/ttyUSB1", 115200, timeout=3, writeTimeout=10000)
+
 if len(sys.argv) <= 1:
   ser.write("G21\n");		# ;metric values
   ser.write("G90\n");		# ;absolute positioning
@@ -23,13 +28,18 @@ if len(sys.argv) <= 1:
   print("move up 10mm")
   sys.exit(0)
 
+errorcount=0
 def ser_readline():
   try:
     line = ser.readline()
+    errorcount=0
   except Exception as e:
     line = ''
     print "ser.readline() error: " + str(e)
     time.sleep(1)
+    errorcount += 1
+    if errorcount > 10: 
+      raise e
   return line
 
 file = sys.argv[1]
