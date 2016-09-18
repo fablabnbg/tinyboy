@@ -36,15 +36,12 @@ The red led is on while the stick is mounted read/write. You can safely remove t
 EOF
 
 if [ -f $mountpoint/network/wpa_supplicant.conf ]; then
-  set -x
-  exec 2>&1 > $outdir/log
   cp $mountpoint/network/wpa_supplicant.conf /etc/wpa_supplicant
-  wpa_cli reconfigure
+  wpa_cli reconfigure > $outdir/log
   sleep 2
-  wpa_cli status
+  wpa_cli status >> $outdir/log
   sleep 2
-  wpa_cli status
-  set +x
+  wpa_cli status >> $outdir/log
 fi
 
 umount $mountpoint
