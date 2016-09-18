@@ -1,0 +1,26 @@
+# Wired adapter #1
+allow-hotplug eth0
+iface eth0 inet dhcp
+#	hwaddress ether # if you want to set MAC manually
+#	pre-up /sbin/ifconfig eth0 mtu 3838 # setting MTU for DHCP, static just: mtu 3838
+
+# Wired adapter #2
+#allow-hotplug eth1
+#iface eth1 inet dhcp
+#	hwaddress ether # if you want to set MAC manually
+#	pre-up /sbin/ifconfig eth0 mtu 3838 # setting MTU for DHCP, static just: mtu 3838
+
+# Wireless adapter #1
+allow-hotplug wlan0
+iface wlan0 inet dhcp
+	# wpa-ssid "jw samsung s4"
+	# wpa-psk 3ff94bc17655db3220cee269e0d0f51509a9a290d842954906811cc4baa8bc5b
+ 	wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+ 	iface default inet dhcp
+
+
+# to generate proper encrypted key: wpa_passphrase yourSSID yourpassword
+
+# Local loopback
+auto lo
+iface lo inet loopback

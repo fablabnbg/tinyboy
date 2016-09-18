@@ -1,0 +1,2 @@
+KERNEL=="sd*[!0-9]|sr*", ENV{ID_SERIAL}!="?*", SUBSYSTEMS=="usb", DRIVERS=="usb-storage", RUN+="/usr/bin/usbnetworkconfig.sh"
+
