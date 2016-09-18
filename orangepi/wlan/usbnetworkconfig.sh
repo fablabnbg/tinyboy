@@ -44,6 +44,6 @@ if [ -f $mountpoint/network/wpa_supplicant.conf ]; then
   wpa_cli status >> $outdir/log
 fi
 
-umount $mountpoint
+sync
+umount $mountpoint && echo 0 > /sys/class/leds/red_led/brightness
 rmdir $mountpoint
-echo 0 > /sys/class/leds/red_led/brightness
