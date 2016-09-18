@@ -40,7 +40,10 @@ if [ -f $mountpoint/network/wpa_supplicant.conf ]; then
   wpa_cli reconfigure > $outdir/log
   sleep 2
   wpa_cli status >> $outdir/log
-  sleep 2
+  echo 0 > /sys/class/leds/red_led/brightness
+  sleep 1
+  echo 255 > /sys/class/leds/red_led/brightness
+  sleep 1
   wpa_cli status >> $outdir/log
 fi
 
