@@ -30,6 +30,7 @@ if len(sys.argv) <= 1:
 
 errorcount=0
 def ser_readline():
+  global errorcount
   try:
     line = ser.readline()
     errorcount=0
