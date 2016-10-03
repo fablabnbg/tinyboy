@@ -1,0 +1,14 @@
+set last_window_maximized False
+set last_window_width 956
+set last_window_height 593
+set port /dev/ttyUSB0
+set baudrate 115200
+set bedtemp_abs 0
+set bedtemp_pla 0
+set temperature_abs 220
+set build_dimensions 80.00x80.00x80.00+0.00+0.00+0.00+0.00+0.00+0.00
+set extruders 1
+set last_temperature 220.0
+set last_sash_position 223
+set temperature_pla 190
+set xy_feedrate 2000
