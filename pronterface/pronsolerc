@@ -12,3 +12,4 @@ set last_temperature 220.0
 set last_sash_position 223
 set temperature_pla 190
 set xy_feedrate 2000
+macro where M114
