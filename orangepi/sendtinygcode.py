@@ -8,6 +8,7 @@
 # 2016-06-23, jw -- initial draught.
 # 2016-08-14, jw -- fixed upward move to be really relative.
 # 2016-09-05, jw -- better exception handling.
+# 2016-10-14, jw -- est_time_min from cura ;TIME: string
 #
 import sys, re, serial, time
 
@@ -59,10 +60,16 @@ while len(seen):
   print seen
   seen = ser_readline()
 
+est_time_min = 0
+
 while True:
   line = fd.readline()
   count += len(line)
   if line == '': break
+  m = re.match(';TIME:(\d*)', line)
+  if (m):
+    est_time_min = int(int(m.group(1))/60.)
+    print("Estimated print time: %d min." % est_time_min)
   line = re.sub(';.*', '', line)
   line = re.sub('\s*[\n\r]+$', '', line)
   if line == '': continue
@@ -87,11 +94,12 @@ while True:
   if (now > tstamp + 10):
     bps = float(count) / (1 + now - start_tstamp) 
     eta = ''
-    elapsed = "%dmin" % (int((now - start_tstamp)/60))
+    elapsed = "%d min" % (int((now - start_tstamp)/60))
+    if (est_time_min): elapsed += "/%d min" % est_time_min
     if (now > start_tstamp + 2*60):	# start eta calc after 2 min
       secs = int(float(total-count)/bps)
       min = int(secs/60)
-      eta = "ETA %dmin" % (min)
+      eta = "ETA %d min" % (min)
     print "%.1f %%, %s" % (count * 100. / total, elapsed)
     tstamp = now
     
