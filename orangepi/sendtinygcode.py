@@ -95,7 +95,7 @@ while True:
     bps = float(count) / (1 + now - start_tstamp) 
     eta = ''
     elapsed = "%d min" % (int((now - start_tstamp)/60))
-    if (est_time_min): elapsed += "/%d min" % est_time_min
+    if (est_time_min): elapsed += " / %d min" % est_time_min
     if (now > start_tstamp + 2*60):	# start eta calc after 2 min
       secs = int(float(total-count)/bps)
       min = int(secs/60)
