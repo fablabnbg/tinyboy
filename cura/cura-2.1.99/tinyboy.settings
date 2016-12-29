@@ -1,0 +1,44 @@
+Machine Settings
+
+80 x 80 x 80
+
+Printhead Settings
+X min 20
+Y min 20
+X max 10
+Y max 10
+
+GCode Flavoud RepRap (Marlin)
+
+Nozzle size 0.4 mm
+
+Start Gcode
+
+M92 X201.50 Y201.50 Z6400.00 E101.00      ; XY calibration was 2% too small with 196.85
+M106       ;start with the fan on
+G21        ;metric values
+G90        ;absolute positioning
+M82        ;set extruder to absolute mode
+M104 S{material_print_temperature} ;extruder heater start
+G28 X0 Y0  ;move X/Y to min endstops
+G28 Z0     ;move Z to min endstops
+G1 Z15.0 F2400 ;move the platform down 15mm
+G92 E0                  ;zero the extruded length
+G92 E0                  ;zero the extruded length again
+G1 F{speed_travel}
+M109 S{material_print_temperature} ;wait for temp
+G1 F200 E{retraction_amount}; pressurize bowden, to be relaxed at layer start
+M117 Printing...
+
+End Gcode
+
+M104 S0                     ;extruder heater off
+M140 S0                     ;heated bed heater off (if you have it)
+G91                                    ;relative positioning
+G1 E-5 F300                            ;retract the filament a bit before lifting the nozzle, to release some of the pressure
+G1 Z+5 ;move Z up a bit and retract filament even more
+G28 X0 Y0                              ;move X/Y to min endstops, so the head is out of the way
+M84                         ;steppers off
+G90                         ;absolute positioning
+M106
+
