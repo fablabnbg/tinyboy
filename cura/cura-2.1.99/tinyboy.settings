@@ -1,8 +1,9 @@
 Machine Settings
-
+----------------
 80 x 80 x 80
 
 Printhead Settings
+------------------
 X min 20
 Y min 20
 X max 10
@@ -13,7 +14,7 @@ GCode Flavoud RepRap (Marlin)
 Nozzle size 0.4 mm
 
 Start Gcode
-
+----------
 M92 X201.50 Y201.50 Z6400.00 E101.00      ; XY calibration was 2% too small with 196.85
 M106       ;start with the fan on
 G21        ;metric values
@@ -31,7 +32,7 @@ G1 F200 E{retraction_amount}; pressurize bowden, to be relaxed at layer start
 M117 Printing...
 
 End Gcode
-
+---------
 M104 S0                     ;extruder heater off
 M140 S0                     ;heated bed heater off (if you have it)
 G91                                    ;relative positioning
@@ -41,4 +42,85 @@ G28 X0 Y0                              ;move X/Y to min endstops, so the head is
 M84                         ;steppers off
 G90                         ;absolute positioning
 M106
+
+
+
+
+Setting TF-0.2mm+raft
+---------------------
+[general]
+version = 2
+name = TF-0.2mm+raft
+definition = custom
+
+[metadata]
+type = quality_changes
+quality_type = normal
+
+[values]
+; Quality
+layer_height = 0.2
+
+; Shell
+wall_thickness = 0.4
+top_thickness = 0.8
+top_bottom_pattern = lines
+alternate_extra_perimeter = True
+top_bottom_thickness = 0.4
+
+; Infill
+infill_sparse_density = 20
+gradual_infill_steps = 3
+infill_pattern = grid
+infill_line_distance = 3
+gradual_infill_step_height = 2
+
+; Material
+material_print_temperature = 200
+material_diameter = 1.75
+retraction_amount = 6.5
+retraction_speed = 40
+retraction_hop_enabled = 0.05
+retraction_count_max = 30
+
+; Speed
+speed_print = 40
+speed_layer_0 = 20
+speed_travel = 40
+
+; Cooling
+cool_min_layer_time = 30
+
+; Support
+support_enable = True
+support_type = buildplate
+support_pattern = zigzag
+support_infill_rate = 20
+support_z_distance = 0.4
+support_interface_enable = False
+support_interface_pattern = zigzag
+support_interface_density = 50
+support_interface_height = 0.4
+
+; Build Plate Adhesion
+adhesion_type = raft
+skirt_gap = 1
+skirt_line_count = 2
+brim_width = 3
+raft_margin = 3
+raft_surface_layers = 1
+raft_interface_line_width = 0.4
+raft_base_thickness = 0.2
+raft_base_line_width = =machine_nozzle_size * 2
+raft_base_line_spacing = 2.4
+raft_interface_speed = 40
+raft_speed = 40
+raft_base_speed = 20
+
+; Experimental
+meshfix_union_all = False
+support_conical_enabled = True
+support_conical_min_width = 3
+wireframe_flow = 140
+wireframe_printspeed = 5
 

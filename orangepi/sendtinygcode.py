@@ -61,14 +61,17 @@ def ser_open(device=None, baud=115200, timeout=3, writeTimeout=10000):
 
   # gobble away initial boiler plate output, if any
   seen = ser_readline()
+  if len(seen) == 6 and seen[:4] == 'wait': seen = ''
   while len(seen):
-    print "seen: ", seen,
+    print "seen: ", seen[:4], len(seen), "xx"
     seen = ser_readline()
+    if len(seen) == 6 and seen[:4] == 'wait': seen = ''
 
 def ser_check():
   empty_count = 0
   while True:
     seen = ser_readline()
+    if len(seen) == 6 and seen[:4] == 'wait': seen = ''
     if seen[:2] == 'ok':
       if verbose: print seen
       break

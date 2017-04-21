@@ -325,7 +325,7 @@ def main():
       bb = m.bounding_box			# oriented parallel to the axis
       # bb = m.bounding_box_oriented	# rotated for minimum size, slow!
       for f in bb.facets():
-        bb.visual.face_colors[f] = trimesh.visual.rgba([255,255,0,127])
+        bb.visual.face_colors[f] = trimesh.visual.to_rgba([255,255,0,127])
       # FIXME: transparency and color does not work.
       # (m+bb).show(block=False)
       m.show(block=False)
