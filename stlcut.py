@@ -17,6 +17,7 @@
 #
 # sudo pip install rtree
 # sudo pip install trimesh
+# trimesh.scene.viewer.diff     # Allow Q for quit, zoom without mouse-wheel
 #
 #-----------------------
 #
@@ -52,7 +53,7 @@
 #         any of meshlab, freecad, openscad.
 #
 # TODO:
-#         option --support=0.1 
+#         option --support=0.1
 #         Add a thin wall where the cut went. This prevents lose pieces
 #         from falling off during print.
 #
@@ -330,8 +331,15 @@ def main():
       # (m+bb).show(block=False)
       m.show(block=False)
 
-      print "In the mesh view window, dragging rotates the view, ctl + drag pans, mouse wheel scrolls, 'z' returns to the base view, 'w' toggles wireframe mode, and 'c' toggles backface culling."
-      parser.exit('bounding box printed. Specify one of the -x, -y, -z options to cut something.')
+      print """View mode:
+     drag rotates the view,
+     CTRL + drag pans,
+     SHIFT + drag zooms (mouse wheel scrolls),
+     'z' returns to the base view,
+     'w' toggles wireframe mode, and
+     'c' toggles backface culling.
+     'q' quit."""
+      parser.exit('Specify one of the -x, -y, -z options for cut mode.')
 
   svg = [ args.infile ]
 

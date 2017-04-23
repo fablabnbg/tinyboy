@@ -1,0 +1,26 @@
+# trimesh.scene.viewer.diff
+# Allow Q for quit, zoom without mouse-wheel
+# Used in strlcut.py
+--- /usr/local/lib/python2.7/dist-packages/trimesh/scene/viewer.py.old	2017-04-23 13:49:41.546137426 +0200
++++ /usr/local/lib/python2.7/dist-packages/trimesh/scene/viewer.py	2017-04-23 13:46:05.165901376 +0200
+@@ -201,6 +201,10 @@
+                 (modifiers & pyglet.window.key.MOD_CTRL)):
+             self.view['translation'][0:2] += delta
+ 
++        elif ((buttons == pyglet.window.mouse.LEFT) and
++                (modifiers & pyglet.window.key.MOD_SHIFT)):
++            self.view['translation'][2] += float(dy) / self.height
++
+         # left mouse button, no modifier keys pressed (rotate)
+         elif (buttons == pyglet.window.mouse.LEFT):
+             self.view['ball'].drag([x, -y])
+@@ -214,6 +218,9 @@
+             self.toggle_wireframe()
+         elif symbol == pyglet.window.key.Z:
+             self.reset_view()
++        elif symbol == pyglet.window.key.Q:
++            import sys
++            sys.exit(0)
+         elif symbol == pyglet.window.key.C:
+             self.toggle_culling()
+ 
