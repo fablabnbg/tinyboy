@@ -51,6 +51,7 @@
 # 0.7 jw, support for newer trimesh 1.15.16 added. Install hints added.
 # 0.8 jw, -s, --scale option added, as I failed to scale an stl with
 #         any of meshlab, freecad, openscad.
+# 0.9 jw, coords_pos_spec() fixed to never return pos as type str.
 #
 # TODO:
 #         option --support=0.1
@@ -126,7 +127,7 @@ def coords_pos_spec(bbox, pos):
   ret = []
   ret.extend(bbox[0])
   ret.extend(bbox[1])
-  ret.append(pos)
+  ret.append(float(pos))
   ret.append(perc)
   ret.append(items)
 
@@ -172,6 +173,10 @@ def cutboxes_z(bbox, pos):
 
   out = []
   for (l,h) in range_list(z1, z2, v, items):
+    print z1, type(z1)
+    print z2, type(z2)
+    print v, type(v)
+    print items, type(items)
     print 'z range: [%g .. %g]' % (l, h)
     out.append(trimesh.primitives.Box(
         box_center =[(x2+x1)*.5, (y2+y1)*.5, (h+l)*.5],

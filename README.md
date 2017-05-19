@@ -15,6 +15,7 @@ Ideas
 
 References
 ==========
+* Hobbyking: https://hobbyking.com/de_de/fabrikator-mini-ii-blue-m100.html
 * Homepage: http://www.tinyboy.net/
 * Github: https://github.com/HKCOTA/TinyBoy /blob/master/bom_list.md
 * Thingiverse: 
