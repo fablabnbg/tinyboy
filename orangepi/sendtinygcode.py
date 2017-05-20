@@ -10,12 +10,13 @@
 # 2016-09-05, jw -- better exception handling.
 # 2016-10-01, jw -- tested and fixed error handling in ser_readline()
 # 2016-10-14, jw -- est_time_min from cura ;TIME: string
-#
+# 2017-05-18, jw -- writing log file.
 import sys, re, serial, time
 
 
 verbose=False
 
+logfile='print.log'
 ser=None
 errorcount=0
 def ser_readline():
@@ -146,4 +147,4 @@ while True:
     print "%.1f %%, %s" % (count * 100. / total, elapsed)
     tstamp = now
     
-
+open(logfile, 'a').write(file + " " + str(tstamp-start_tstamp))
