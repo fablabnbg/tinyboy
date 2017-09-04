@@ -11,12 +11,23 @@
 # 2016-10-01, jw -- tested and fixed error handling in ser_readline()
 # 2016-10-14, jw -- est_time_min from cura ;TIME: string
 # 2017-05-18, jw -- writing log file.
-import sys, re, serial, time
+# 2017-09-03, jw -- loglookup() added.
 
+import sys, re, serial, time
 
 verbose=False
 
 logfile='print.log'
+
+def loglookup(logfile, name):
+  pat = re.compile(re.escape(name) + " (\d+)")
+  seconds=None
+  with open(logfile) as f:
+    for line in f:
+      m = pat.match(line)
+      if m: seconds = int(m.group(1))
+  if seconds: print "Last printed duration: %d min\n" % (seconds/60)
+ 
 ser=None
 errorcount=0
 def ser_readline():
@@ -110,6 +121,7 @@ count = 0
 tstamp = time.time()
 start_tstamp = tstamp
 
+loglookup(logfile, file)
 
 open(logfile, 'a').write(file + " -\n")
 
