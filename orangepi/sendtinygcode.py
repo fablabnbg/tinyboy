@@ -27,7 +27,7 @@ def loglookup(logfile, name):
       m = pat.match(line)
       if m: seconds = int(m.group(1))
   if seconds: print "Last printed duration: %d min\n" % (seconds/60)
- 
+
 ser=None
 errorcount=0
 def ser_readline():
