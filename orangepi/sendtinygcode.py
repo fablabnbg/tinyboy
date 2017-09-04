@@ -64,7 +64,7 @@ def ser_open(device=None, baud=115200, timeout=3, writeTimeout=10000):
   seen = ser_readline()
   if len(seen) == 6 and seen[:4] == 'wait': seen = ''
   while len(seen):
-    print "seen: ", seen[:4], len(seen), "xx"
+    print "seen: ", seen,
     seen = ser_readline()
     if len(seen) == 6 and seen[:4] == 'wait': seen = ''
 
@@ -110,6 +110,9 @@ count = 0
 tstamp = time.time()
 start_tstamp = tstamp
 
+
+open(logfile, 'a').write(file + " -\n")
+
 est_time_min = 0
 
 while True:
@@ -147,4 +150,4 @@ while True:
     print "%.1f %%, %s" % (count * 100. / total, elapsed)
     tstamp = now
     
-open(logfile, 'a').write(file + " " + str(tstamp-start_tstamp))
+open(logfile, 'a').write(file + " " + str(tstamp-start_tstamp) + "\n")
