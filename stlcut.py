@@ -143,7 +143,7 @@ def cutboxes_x(bbox, pos):
 
   out = []
   for (l,h) in range_list(x1, x2, v, items):
-    print 'x range: [%g .. %g]' % (l, h)
+    print('x range: [%g .. %g]' % (l, h))
     out.append(trimesh.primitives.Box(
         box_center =[(h+l)*.5, (y2+y1)*.5, (z2+z1)*.5],
         box_extents=[(h-l),    (y2-y1),    (z2-z1)]))
@@ -158,7 +158,7 @@ def cutboxes_y(bbox, pos):
 
   out = []
   for (l,h) in range_list(y1, y2, v, items):
-    print 'y range: [%g .. %g]' % (l, h)
+    print('y range: [%g .. %g]' % (l, h))
     out.append(trimesh.primitives.Box(
         box_center =[(x2+x1)*.5, (h+l)*.5, (z2+z1)*.5],
         box_extents=[(x2-x1),    (h-l),    (z2-z1)]))
@@ -173,11 +173,11 @@ def cutboxes_z(bbox, pos):
 
   out = []
   for (l,h) in range_list(z1, z2, v, items):
-    print z1, type(z1)
-    print z2, type(z2)
-    print v, type(v)
-    print items, type(items)
-    print 'z range: [%g .. %g]' % (l, h)
+    print(z1, type(z1))
+    print(z2, type(z2))
+    print(v, type(v))
+    print(items, type(items))
+    print('z range: [%g .. %g]' % (l, h))
     out.append(trimesh.primitives.Box(
         box_center =[(x2+x1)*.5, (y2+y1)*.5, (h+l)*.5],
         box_extents=[(x2-x1),    (y2-y1),    (h-l)]))
@@ -195,13 +195,13 @@ def euler_rotation_matrix(rx, ry, rz):
 
 def do_cut(axis, pos, name, engine='blender', mat=None, fix=False):
   done = []
-  print "loading "+name+" ..."
+  print("loading "+name+" ...")
   m = trimesh.load_mesh(name)
   m.process()	# basic cleanup
   if mat is not None: m.transform(mat)
   if fix:
     m.fix_normals()
-    print "is watertight: ", m.fill_holes()
+    print("is watertight: ", m.fill_holes())
     m.process()	# basic cleanup
   # print "... done."
   bbox = copy.deepcopy(m.bounds)
@@ -211,8 +211,8 @@ def do_cut(axis, pos, name, engine='blender', mat=None, fix=False):
   bbox[1][0] += bbox_eps
   bbox[1][1] += bbox_eps
   bbox[1][2] += bbox_eps
-  print m.bounds
-  print bbox
+  print(m.bounds)
+  print(bbox)
 
   boxl = []
   if axis == 'x': boxl = cutboxes_x(m.bounds, pos)
@@ -223,15 +223,15 @@ def do_cut(axis, pos, name, engine='blender', mat=None, fix=False):
 
   for b in range(len(boxl)):
     outname=base+"_"+axis+str(b+1)+"."+suf
-    print "cutting "+outname+"..."
+    print("cutting "+outname+"...")
     boxl[b].process()	# basic cleanup
     mcut = m.intersection(boxl[b], engine=engine)
     mcut.process()
     if fix:
       mcut.fix_normals()
-      print "is watertight: ", m.fill_holes()
+      print("is watertight: ", m.fill_holes())
       mcut.process()
-    print "saving "+outname+" ..."
+    print("saving "+outname+" ...")
     try:
       # 1.15.16 syntax
       open(outname, "wb+").write(trimesh.io.export.export_stl(mcut))
@@ -293,7 +293,7 @@ def main():
     remesh['vertex_perc'] = f[0]
     if len(f) > 1:
       remesh['treshold'] = float(f[1])
-    print "remesh not impl. ", remesh
+    print("remesh not impl. ", remesh)
 
 
   if args.xyz is not None: cut['x']=cut['y']=cut['z']=args.xyz
@@ -314,20 +314,20 @@ def main():
   if args.save_transformed: cut['x'] = cut['y'] = cut['z'] = None
 
   if cut['x'] is None and cut['y'] is None and cut['z'] is None:
-    print "loading "+args.infile+" ..."
+    print("loading "+args.infile+" ...")
     m = trimesh.load_mesh(args.infile)
     m.process()
     m.transform(RS)
     if args.fix:
-      print "is watertight: ", m.fill_holes()
+      print("is watertight: ", m.fill_holes())
       m.fix_normals()
       m.process()
-    print "vertices: ", len(m.vertices)
+    print("vertices: ", len(m.vertices))
     if args.save_transformed:
       open(args.save_transformed, "wb+").write(trimesh.io.export.export_stl(m))
       parser.exit(args.save_transformed + " written.\nSpecify one of the -x, -y, -z options instead of -S to cut something.")
     else:
-      print m.bounds
+      print(m.bounds)
       bb = m.bounding_box			# oriented parallel to the axis
       # bb = m.bounding_box_oriented	# rotated for minimum size, slow!
       for f in bb.facets():
@@ -336,19 +336,19 @@ def main():
       # (m+bb).show(block=False)
       m.show(block=False)
 
-      print """View mode:
+      print("""View mode:
      drag rotates the view,
      CTRL + drag pans,
      SHIFT + drag zooms (mouse wheel scrolls),
      'z' returns to the base view,
      'w' toggles wireframe mode, and
      'c' toggles backface culling.
-     'q' quit."""
+     'q' quit.""")
       parser.exit('Specify one of the -x, -y, -z options for cut mode.')
 
   svg = [ args.infile ]
 
-  print "x,y,z: ", cut['x'], cut['y'], cut['z']
+  print("x,y,z: ", cut['x'], cut['y'], cut['z'])
 
   for dim in ('x','y','z'):
     if cut[dim] is not None:
@@ -357,11 +357,11 @@ def main():
         done.extend(do_cut(dim, cut[dim], f, engine=args.engine, mat=RS, fix=args.fix))
 	RS = None	# only rotate the original input file. The temp files are saved rotated.
         if f != args.infile:
-          print "... removing "+f
+          print("... removing "+f)
           os.remove(f)
       svg = done
 
-  print "files generated: ", svg
+  print("files generated: ", svg)
 
 
 if __name__ == "__main__": main()
