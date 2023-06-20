@@ -135,11 +135,13 @@ def coords_pos_spec(bbox, pos):
   return ret
 
 
-def create_homogeneous_matrix_no_rotation(translation):
-    homogeneous_matrix = numpy.eye(4)
-    homogeneous_matrix[:3, 3] = translation
-    return homogeneous_matrix
+## do with numpy, what trimesh.transformations.translation_matrix does:
+# def create_homogeneous_matrix_no_rotation(translation):
+#     homogeneous_matrix = numpy.eye(4)
+#     homogeneous_matrix[:3, 3] = translation
+#     return homogeneous_matrix
 
+from trimesh.transformations import translation_matrix
 
 def cutboxes_x(bbox, pos):
   # bbox = [[-63.32, -83.48, 0.] [ 63.32, 83.48, 3.00]]
@@ -152,7 +154,7 @@ def cutboxes_x(bbox, pos):
     print('x range: [%g .. %g]' % (l, h))
     box_center = [(h+l)*.5, (y2+y1)*.5, (z2+z1)*.5]
     box_extents = [(h-l),    (y2-y1),    (z2-z1)]
-    out.append(trimesh.primitives.Box(extents=box_extents, transform=create_homogeneous_matrix_no_rotation(box_center)))
+    out.append(trimesh.primitives.Box(extents=box_extents, transform=translation_matrix(box_center)))
     # print "cutboxes_x out", out[-1].bounds
   return out
 
@@ -167,7 +169,7 @@ def cutboxes_y(bbox, pos):
     print('y range: [%g .. %g]' % (l, h))
     box_center = [(x2+x1)*.5, (h+l)*.5, (z2+z1)*.5]
     box_extents = [(x2-x1),    (h-l),    (z2-z1)]
-    out.append(trimesh.primitives.Box(extents=box_extents, transform=create_homogeneous_matrix_no_rotation(box_center)))
+    out.append(trimesh.primitives.Box(extents=box_extents, transform=translation_matrix(box_center)))
     # print "cutboxes_y out", out[-1].bounds
   return out
 
@@ -186,7 +188,7 @@ def cutboxes_z(bbox, pos):
     print('z range: [%g .. %g]' % (l, h))
     box_center  = [(x2+x1)*.5, (y2+y1)*.5, (h+l)*.5]
     box_extents = [(x2-x1),    (y2-y1),    (h-l)]
-    out.append(trimesh.primitives.Box(extents=box_extents, transform=create_homogeneous_matrix_no_rotation(box_center)))
+    out.append(trimesh.primitives.Box(extents=box_extents, transform=translation_matrix(box_center)))
     # print "cutboxes_z out", out[-1].bounds
   return out
 
